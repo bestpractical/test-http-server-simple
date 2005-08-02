@@ -1,42 +1,30 @@
 #!/usr/bin/perl
 
-use Test::More tests => 11;
+use Test::More tests => 6;
 use Test::Builder::Tester;
-
-BEGIN { use_ok "Test::HTTP::Server::Simple" }
-
-BEGIN { use_ok "HTTP::Server::Simple" }
-
-ok(defined(&started_ok), "function 'started_ok' exported");
-
-test_out("not ok 1 - bar");
-test_fail(+2);
-test_diag("foo is not an HTTP::Server::Simple");
-started_ok("foo", "bar");
-test_test("first arg to started_ok must be an HTTP::Server::Simple");
 
 test_out("not ok 1 - baz");
 test_fail(+2);
 test_diag("HTTP::Server::Simple->background failed: random failure");
-started_ok(THSS::FailOnBackground->new(1234), "baz");
+THSS::FailOnBackground->new(1234)->started_ok("baz");
 test_test("detect background failure");
 
 test_out("not ok 1 - blop");
 test_fail(+2);
 test_diag("HTTP::Server::Simple->background didn't return a valid PID");
-started_ok(THSS::ReturnInvalidPid->new(4194), "blop");
+THSS::ReturnInvalidPid->new(4194)->started_ok("blop");
 test_test("detect bad pid");
 
-BEGIN { use_ok "HTTP::Server::Simple::CGI" }
-
 test_out("ok 1 - beep");
-my $URL = started_ok(HTTP::Server::Simple::CGI->new(9583), "beep");
+my $URL = THSS::Good->new(9583)->started_ok("beep");
+test_diag("Waiting for child to start up...");
 test_test("start up correctly");
 
 is($URL, "http://localhost:9583");
 
 test_out("ok 1 - started server");
-$URL = started_ok(HTTP::Server::Simple::CGI->new(9384));
+$URL = THSS::Good->new(9384)->started_ok;
+test_diag("Waiting for child to start up...");
 test_test("start up correctly (with default message)");
 
 is($URL, "http://localhost:9384");
@@ -47,10 +35,12 @@ is($URL, "http://localhost:9384");
 
 
 package THSS::FailOnBackground;
-use base qw/HTTP::Server::Simple/;
+use base qw/Test::HTTP::Server::Simple HTTP::Server::Simple/;
 sub background { die "random failure\n" }
 
 package THSS::ReturnInvalidPid;
-use base qw/HTTP::Server::Simple/;
+use base qw/Test::HTTP::Server::Simple HTTP::Server::Simple/;
 sub background { return "" }
 
+package THSS::Good;
+use base qw/Test::HTTP::Server::Simple HTTP::Server::Simple::CGI/;

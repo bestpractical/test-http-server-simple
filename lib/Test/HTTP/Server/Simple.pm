@@ -1,14 +1,12 @@
 package Test::HTTP::Server::Simple;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use warnings;
 use strict;
 use Carp;
 
-use Exporter;
-our @ISA = qw/Exporter/;
-our @EXPORT = qw/started_ok/;
+use NEXT;
 
 use Test::Builder;
 my $Tester = Test::Builder->new;
@@ -20,12 +18,15 @@ Test::HTTP::Server::Simple - Test::More functions for HTTP::Server::Simple
 
 =head1 SYNOPSIS
 
+    package My::WebServer;
+    use base qw/Test::HTTP::Server::Simple HTTP::Server::Simple/;
+    
+    package main;
     use Test::More tests => 42;
-    use Test::HTTP::Server::Simple;
-
+    
     my $s = My::WebServer->new;
 
-    my $url_root = started_ok($s, "start up my web server);
+    my $url_root = $s->started_ok("start up my web server);
 
     # connect to "$url_root/cool/site" and test with Test::WWW::Mechanize,
     # Test::HTML::Tidy, etc
@@ -33,14 +34,14 @@ Test::HTTP::Server::Simple - Test::More functions for HTTP::Server::Simple
   
 =head1 DESCRIPTION
 
-This module provides functions to test an L<HTTP::Server::Simple>-based web
-server.  Currently, it provides only one such function: C<started_ok>.
+This mixin class provides methods to test an L<HTTP::Server::Simple>-based web
+server.  Currently, it provides only one such method: C<started_ok>.
 
 =over 4 
 
-=item started_ok $server, [$text]
+=item started_ok [$text]
 
-C<started_ok> takes an instance of a subclass of L<HTTP::Server::Simple> and
+C<started_ok> takes 
 an optional test description.  The server needs to have been configured (specifically,
 its port needs to have been set), but it should not have been run or backgrounded.
 C<started_ok> calls C<background> on the server, which forks it to run in the background.
@@ -58,24 +59,41 @@ my @CHILD_PIDS;
 $SIG{INT} = sub { exit };
 
 END {
-    kill 9, @CHILD_PIDS if @CHILD_PIDS;
+    kill 'USR1', @CHILD_PIDS if @CHILD_PIDS;
 } 
 
 sub started_ok {
-    my $server = shift;
+    my $self = shift;
     my $text   = shift;
     $text = 'started server' unless defined $text;
 
-    unless (UNIVERSAL::isa($server, 'HTTP::Server::Simple')) {
-	$Tester->ok(0, $text);
-	$Tester->diag("$server is not an HTTP::Server::Simple");
-	return;
-    } 
-
-    my $port = $server->port;
+    my $port = $self->port;
     my $pid;
+
+    $self->{'test_http_server_simple_parent_pid'} = $$;
+
+    my $child_loaded_yet = 0;
+
+    # So this is a little complicated.  The following signal handler does two
+    # ENTIRELY DIFFERENT things:
+    #
+    #  In the parent, it just sets $child_loaded_yet, which breaks out of the
+    #  while loop below.  It's activated by the kid sending it a SIGUSR1 after
+    #  it runs setup_listener
+    #
+    #  In the kid, it sets the variable, but that's basically pointless since
+    #  the call to ->background doesn't actually return in the kid.  But also,
+    #  it exits.  And when you actually exit with 'exit' (as opposed to being
+    #  killed by a signal) END blocks get run.  Which means that you can use
+    #  Devel::Cover to test the kid's coverage.  This one is activated by the
+    #  parent's END block in this file.
+
+    local $SIG{'USR1'} = sub { $child_loaded_yet = 1; exit unless $self->{'test_http_server_simple_parent_pid'} == $$ };
+
+    # XXX TODO FIXME should somehow not have the signal handler around in the
+    # kid
     
-    eval { $pid = $server->background; };
+    eval { $pid = $self->background; };
 
     if ($@) {
 	my $error_text = $@;  # In case the next line changes it.
@@ -92,9 +110,29 @@ sub started_ok {
 
     push @CHILD_PIDS, $pid;
 
+    $Tester->diag("Waiting for child to start up...");
+
+    1 while not $child_loaded_yet;
+
     $Tester->ok(1, $text);
 
     return "http://localhost:$port";
+}
+
+=begin private
+
+=head2 setup_listener
+
+We send a signal to the parent here.  We need to use NEXT because this is a mixin.
+
+=end private
+
+=cut
+
+sub setup_listener {
+    my $self = shift;
+    $self->NEXT::setup_listener;
+    kill 'USR1', $self->{'test_http_server_simple_parent_pid'};
 } 
 
 =back

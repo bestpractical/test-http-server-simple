@@ -1,5 +1,10 @@
 Revision history for Test-HTTP-Server-Simple
 
-0.0.1  Thu Jun 16 18:16:56 2005
+0.01  Tue Aug 02 18:16:00 2005
+       Change API to make it a mixin.
+       Make child signal parent when it's ready, and make the parent-killing-child
+       be much nicer than a -9.
+
+0.01  Thu Jun 16 18:16:56 2005
        Initial release.
 
