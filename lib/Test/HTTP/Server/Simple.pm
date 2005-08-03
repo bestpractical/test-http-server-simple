@@ -115,8 +115,6 @@ sub started_ok {
 
     push @CHILD_PIDS, $pid;
 
-    $Tester->diag("Waiting for child to start up...");
-
     1 while not $child_loaded_yet;
 
     $Tester->ok(1, $text);

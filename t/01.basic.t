@@ -17,14 +17,12 @@ test_test("detect bad pid");
 
 test_out("ok 1 - beep");
 my $URL = THSS::Good->new(9583)->started_ok("beep");
-test_diag("Waiting for child to start up...");
 test_test("start up correctly");
 
 is($URL, "http://localhost:9583");
 
 test_out("ok 1 - started server");
 $URL = THSS::Good->new(9384)->started_ok;
-test_diag("Waiting for child to start up...");
 test_test("start up correctly (with default message)");
 
 is($URL, "http://localhost:9384");
