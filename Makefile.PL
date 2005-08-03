@@ -13,6 +13,7 @@ WriteMakefile(
         'Test::Builder' => 0,
         'Test::Builder::Tester' => 1.01,
 	'HTTP::Server::Simple' => 0,
+	'NEXT' => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'Test-HTTP-Server-Simple-*' },

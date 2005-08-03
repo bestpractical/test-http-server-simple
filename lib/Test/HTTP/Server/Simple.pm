@@ -49,6 +49,11 @@ L<Test::HTTP::Server::Simple> takes care of killing the server when your test sc
 even if you kill your test script with an interrupt.  C<started_ok> returns the URL 
 C<http://localhost:$port> which you can use to connect to your server.
 
+Note that if the child process dies, or never gets around to listening for connections, this
+just hangs.  (This may be fixed in a future version.)
+
+Also, it probably won't work if you use a custom L<Net::Server> in your server.
+
 =cut
 
 my @CHILD_PIDS;
@@ -139,7 +144,7 @@ sub setup_listener {
 
 =head1 DEPENDENCIES
 
-L<Test::Builder>, L<HTTP::Server::Simple>.
+L<Test::Builder>, L<HTTP::Server::Simple>, L<NEXT>.
 
 
 =head1 INCOMPATIBILITIES
