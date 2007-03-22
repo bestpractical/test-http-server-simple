@@ -1,4 +1,4 @@
-Test-HTTP-Server-Simple version 0.0.1
+Test-HTTP-Server-Simple version 0.03
 
 Provides some very basic test functions for HTTP::Server::Simple.
 Currently, just deals with cleanly backgrounding and killing a child
