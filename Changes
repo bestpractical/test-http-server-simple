@@ -1,5 +1,8 @@
 Revision history for Test-HTTP-Server-Simple
 
+0.04
+       Patch from SMUELLER to add Win32 Support - http://rt.cpan.org/Public/Bug/Display.html?id=19564
+
 0.03  Wed Jul  5 22:55:39 2006
        Kill "waiting for child to start up" message.
 

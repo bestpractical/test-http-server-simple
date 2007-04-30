@@ -1,6 +1,6 @@
 package Test::HTTP::Server::Simple;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 use warnings;
 use strict;
@@ -10,6 +10,14 @@ use NEXT;
 
 use Test::Builder;
 my $Tester = Test::Builder->new;
+
+use constant WIN32 => $^O =~ /win32/i;
+
+my $Event; # used on win32 only
+if (WIN32) {
+    require Win32::Event;
+    $Event = Win32::Event->new();
+}
 
 =head1 NAME
 
@@ -61,10 +69,21 @@ my @CHILD_PIDS;
 # If an interrupt kills perl, END blocks are not run.  This
 # essentially converts interrupts (like CTRL-C) into a standard
 # perl exit (even if we're inside an eval {}).
-$SIG{INT} = sub { exit };
+$SIG{INT} = sub { warn "INT:$$"; exit };
 
 END {
-    kill 'USR1', @CHILD_PIDS if @CHILD_PIDS;
+    if (WIN32) {
+        # INT won't do since the server is doing a blocking read
+        # which isn't interrupted by anything but KILL on win32.
+        kill 9, $_ for @CHILD_PIDS;
+        sleep 1;
+        foreach (@CHILD_PIDS) {
+            sleep 1 while kill 0, $_;
+        }
+    }
+    else {
+        kill 'USR1', @CHILD_PIDS if @CHILD_PIDS;
+    }
 } 
 
 sub started_ok {
@@ -93,29 +112,38 @@ sub started_ok {
     #  Devel::Cover to test the kid's coverage.  This one is activated by the
     #  parent's END block in this file.
 
-    local $SIG{'USR1'} = sub { $child_loaded_yet = 1; exit unless $self->{'test_http_server_simple_parent_pid'} == $$ };
+    local %SIG;
+    if (not WIN32) {
+        $SIG{'USR1'} = sub { $child_loaded_yet = 1; exit unless $self->{'test_http_server_simple_parent_pid'} == $$ }
+    }
 
     # XXX TODO FIXME should somehow not have the signal handler around in the
     # kid
+    # Comment: How about if ($pid) { $SIG{'USR1'} = ... }?
     
     eval { $pid = $self->background; };
 
     if ($@) {
-	my $error_text = $@;  # In case the next line changes it.
-	$Tester->ok(0, $text);
-	$Tester->diag("HTTP::Server::Simple->background failed: $error_text");
-	return;
+        my $error_text = $@;  # In case the next line changes it.
+        $Tester->ok(0, $text);
+        $Tester->diag("HTTP::Server::Simple->background failed: $error_text");
+        return;
     }
 
     unless ($pid =~ /^-?\d+$/) {
-	$Tester->ok(0, $text);
-	$Tester->diag("HTTP::Server::Simple->background didn't return a valid PID");
-	return;
+        $Tester->ok(0, $text);
+        $Tester->diag("HTTP::Server::Simple->background didn't return a valid PID");
+        return;
     } 
 
     push @CHILD_PIDS, $pid;
 
-    1 while not $child_loaded_yet;
+    if (WIN32) {
+        $Event->wait();
+    }
+    else {
+        1 while not $child_loaded_yet;
+    }
 
     $Tester->ok(1, $text);
 
@@ -135,7 +163,12 @@ We send a signal to the parent here.  We need to use NEXT because this is a mixi
 sub setup_listener {
     my $self = shift;
     $self->NEXT::setup_listener;
-    kill 'USR1', $self->{'test_http_server_simple_parent_pid'};
+    if (WIN32) {
+        $Event->pulse();
+    }
+    else {
+        kill 'USR1', $self->{'test_http_server_simple_parent_pid'};
+    }
 } 
 
 =back
