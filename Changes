@@ -1,5 +1,10 @@
 Revision history for Test-HTTP-Server-Simple
 
+0.05 Tue May  8 12:30:09 EDT 2007
+
+
+    No functionality changes. Just some releng cleanups
+
 0.04
        Patch from SMUELLER to add Win32 Support - http://rt.cpan.org/Public/Bug/Display.html?id=19564
 
