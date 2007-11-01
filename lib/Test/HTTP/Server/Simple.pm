@@ -83,7 +83,7 @@ END {
     }
     else {
         kill 'USR1', @CHILD_PIDS if @CHILD_PIDS;
-        1 while wait() > 0;
+        wait for @CHILD_PIDS;
     }
 } 
 
