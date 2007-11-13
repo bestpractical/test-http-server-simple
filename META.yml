@@ -1,15 +1,18 @@
-# http://module-build.sourceforge.net/META-spec.html
-#XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
-name:         Test-HTTP-Server-Simple
-version:      0.03
-version_from: lib/Test/HTTP/Server/Simple.pm
-installdirs:  site
-requires:
+--- #YAML:1.0
+name:                Test-HTTP-Server-Simple
+version:             0.06
+abstract:            Test::More functions for HTTP::Server::Simple
+license:             ~
+generated_by:        ExtUtils::MakeMaker version 6.36
+distribution_type:   module
+requires:     
     HTTP::Server::Simple:          0
     NEXT:                          0
     Test::Builder:                 0
-    Test::Builder::Tester:         1.01
+    Test::Builder::Tester:         1.04
     Test::More:                    0
-
-distribution_type: module
-generated_by: ExtUtils::MakeMaker version 6.30
+meta-spec:
+    url:     http://module-build.sourceforge.net/META-spec-v1.2.html
+    version: 1.2
+author:
+    - David Glasser <glasser@bestpractical.com>
