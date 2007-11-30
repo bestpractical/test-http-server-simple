@@ -82,8 +82,17 @@ END {
         }
     }
     else {
-        kill 'USR1', @CHILD_PIDS if @CHILD_PIDS;
-        1 while $_ = wait and $_ > 0;
+        my $done = not @CHILD_PIDS;
+        while (not $done) {
+            kill 'USR1', @CHILD_PIDS;
+            local $SIG{ALRM} = sub {die};
+            alarm(5);
+            eval {
+                1 while $_ = wait and $_ > 0;
+            };
+            alarm(0);
+            $done = not $@;
+        }
     }
 } 
 
