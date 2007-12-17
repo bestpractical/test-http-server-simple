@@ -1,6 +1,6 @@
 package Test::HTTP::Server::Simple;
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 use warnings;
 use strict;
@@ -179,7 +179,19 @@ sub setup_listener {
     else {
         kill 'USR1', $self->{'test_http_server_simple_parent_pid'};
     }
-} 
+}
+
+=head2 pids
+
+Returns the PIDs of the processes which have been started.  Since
+multiple test servers can be running at one, be aware that this
+returns a list.
+
+=cut
+
+sub pids {
+    return @CHILD_PIDS;
+}
 
 =back
 
