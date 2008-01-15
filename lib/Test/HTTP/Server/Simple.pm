@@ -45,9 +45,7 @@ Test::HTTP::Server::Simple - Test::More functions for HTTP::Server::Simple
 This mixin class provides methods to test an L<HTTP::Server::Simple>-based web
 server.  Currently, it provides only one such method: C<started_ok>.
 
-=over 4 
-
-=item started_ok [$text]
+=head2 started_ok [$text]
 
 C<started_ok> takes 
 an optional test description.  The server needs to have been configured (specifically,
@@ -192,8 +190,6 @@ returns a list.
 sub pids {
     return @CHILD_PIDS;
 }
-
-=back
 
 =head1 DEPENDENCIES
 
