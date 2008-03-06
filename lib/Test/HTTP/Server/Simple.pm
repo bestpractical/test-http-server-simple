@@ -70,6 +70,7 @@ my @CHILD_PIDS;
 $SIG{INT} = sub { warn "INT:$$"; exit };
 
 END {
+    local $?;
     if (WIN32) {
         # INT won't do since the server is doing a blocking read
         # which isn't interrupted by anything but KILL on win32.
@@ -88,8 +89,8 @@ END {
             eval {
                 1 while $_ = wait and $_ > 0;
             };
-            alarm(0);
             $done = not $@;
+            alarm(0);
         }
     }
 } 
