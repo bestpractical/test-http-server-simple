@@ -1,6 +1,6 @@
 package Test::HTTP::Server::Simple;
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 use warnings;
 use strict;
