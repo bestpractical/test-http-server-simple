@@ -90,6 +90,7 @@ END {
                 my $pid;
                 @CHILD_PIDS = grep {$_ != $pid} @CHILD_PIDS
                   while $pid = wait and $pid > 0 and @CHILD_PIDS;
+                @CHILD_PIDS = () if $pid == -1;
             };
             alarm(0);
         }
