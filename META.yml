@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Test-HTTP-Server-Simple
-version:             0.06
+version:             0.09
 abstract:            Test::More functions for HTTP::Server::Simple
 license:             ~
 generated_by:        ExtUtils::MakeMaker version 6.36
