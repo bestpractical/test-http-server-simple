@@ -81,15 +81,15 @@ END {
         }
     }
     else {
-        my $done = not @CHILD_PIDS;
-        while (not $done) {
+        while (@CHILD_PIDS) {
             kill 'USR1', @CHILD_PIDS;
             local $SIG{ALRM} = sub {die};
             alarm(5);
             eval {
-                1 while $_ = wait and $_ > 0;
+                my $pid;
+                @CHILD_PIDS = grep {$_ != $pid} @CHILD_PIDS
+                  while $pid = wait and $pid > 0 and @CHILD_PIDS;
             };
-            $done = not $@;
             alarm(0);
         }
     }
