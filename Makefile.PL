@@ -9,6 +9,7 @@ WriteMakefile(
     ABSTRACT_FROM       => 'lib/Test/HTTP/Server/Simple.pm',
     PL_FILES            => {},
     PREREQ_PM => {
+        'Storable' => 0,
         'Test::More' => 0,
         'Test::Builder' => 0,
         'Test::Builder::Tester' => 1.04,
