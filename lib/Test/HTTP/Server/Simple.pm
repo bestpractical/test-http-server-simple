@@ -82,9 +82,15 @@ END {
     }
     else {
         @CHILD_PIDS = grep {kill 0, $_} @CHILD_PIDS;
-        while (@CHILD_PIDS) {
+        if (@CHILD_PIDS) {
             kill 'USR1', @CHILD_PIDS;
-            local $SIG{ALRM} = sub {die};
+            local $SIG{ALRM} = sub {
+                use POSIX ":sys_wait_h";
+                my @last_chance = grep { waitpid($_, WNOHANG) == -1 }
+                    grep { kill 0, $_ } @CHILD_PIDS;
+                die 'uncleaned Test::HTTP::Server::Simple processes: '.join(',',@last_chance)
+                    if @last_chance;
+            };
             alarm(5);
             eval {
                 my $pid;
@@ -92,6 +98,7 @@ END {
                   while $pid = wait and $pid > 0 and @CHILD_PIDS;
                 @CHILD_PIDS = () if $pid == -1;
             };
+            die $@ if $@;
             alarm(0);
         }
     }
