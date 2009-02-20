@@ -1,6 +1,6 @@
 package Test::HTTP::Server::Simple;
 
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 
 use warnings;
 use strict;
@@ -67,7 +67,11 @@ my @CHILD_PIDS;
 # If an interrupt kills perl, END blocks are not run.  This
 # essentially converts interrupts (like CTRL-C) into a standard
 # perl exit (even if we're inside an eval {}).
-$SIG{INT} = sub { warn "INT:$$"; exit };
+$SIG{INT} = sub { exit };
+
+# In case the surrounding 'prove' or similar harness got the SIGINT
+# before we did, and hence STDERR is closed.
+$SIG{PIPE} = 'IGNORE';
 
 END {
     local $?;
