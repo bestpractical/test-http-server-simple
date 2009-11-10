@@ -1,5 +1,8 @@
 Revision history for Test-HTTP-Server-Simple
 
+0.11 Tue Nov 10 14:14:17 EST 2009
+    No code changes; add Win32::Event dep for windows platforms
+
 0.10 Thu Feb 19 22:51:02 EST 2009
     Remove StashWarnings and move into its own dist (removes Storable dep)
     Fix long-standing bug where, when under 'prove', servers didn't get killed
