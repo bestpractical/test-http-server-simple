@@ -14,6 +14,7 @@ WriteMakefile(
         'Test::Builder::Tester' => 1.04,
 	'HTTP::Server::Simple' => 0,
 	'NEXT' => 0,
+        ($^O =~ /win32/i ? ( 'Win32::Event' => 0 ) : () ),
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'Test-HTTP-Server-Simple-*' },
